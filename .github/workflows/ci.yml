@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, feature-update ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10', '3.11']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install test dependencies if requirements.txt exists
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Run basic script test
+      run: |
+        echo "Testing hello.py script..."
+        python hello.py
+        python hello.py "CI Test"
+        echo "Hello CI - Basic tests passed!"
+    
+    - name: Run unit tests
+      run: |
+        python -m pytest test_hello.py -v
